@@ -107,3 +107,48 @@ it (which is what actually sends it to the kitchen) or declines it. The customer
 own tracker screen reflects this with an "Awaiting Confirmation" step before "Order
 Received," so they're not left thinking their order started cooking before a human
 has actually looked at it.
+
+## This update: streamlined checkout + payments + WFP handoff
+
+- **Removed from checkout**: table/reference number, guest count, and Senior/PWD
+  fields — this app is for placing an order, not table-side bill splitting (that
+  still lives in the staff app for in-person orders).
+- **Delivery removed as an order type.** Only Dine In and Take Away remain. A
+  friendly note explains customers can still get delivery by ordering Take Away and
+  booking their own rider (Grab/Lalamove/Angkas) — the rider's fee is between them,
+  not part of the food bill.
+- **Dine In** now asks for a preferred time. **Take Away** shows an estimated
+  20–30 minute prep time instead.
+- **Contact details** (phone numbers) are shown directly in checkout.
+- **Payment methods**: GCash, Bank Transfer, or Cash on Delivery/Counter (only
+  offered when the total is under ₱500). GCash/Bank Transfer require uploading a
+  screenshot of proof of payment before the order can be placed — that image
+  uploads to Firebase Storage (same project as the staff app) and is attached to the
+  order.
+- Orders still go through the same staff approval flow as before. If staff aren't
+  ready to send it to the kitchen yet (e.g. still confirming the payment
+  screenshot), they can mark it **"Waiting for Payment Receipt"** in the approval
+  popup — it moves to a dedicated **Waiting for Payment** tab in the staff app until
+  approved or declined from there.
+
+### ⚠️ Storage rules need one more path
+
+Since this app now uploads payment-proof images too, the Firebase Storage rule needs
+to cover `payment-proofs/` in addition to `menu-images/`:
+
+```
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /menu-images/{allPaths=**} {
+      allow read, write: if true;
+    }
+    match /payment-proofs/{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+Update this in Firebase Console → Storage → Rules → Publish, or proof-of-payment
+uploads will fail with a permission error.

@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
+import { getStorage } from 'firebase/storage'
 
 // IMPORTANT: use the exact same Firebase project as the staff Order Board app
 // (same VITE_FIREBASE_* values). That's what makes an order placed here show up
@@ -16,3 +17,4 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
+export const storage = getStorage(app)

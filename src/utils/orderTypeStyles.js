@@ -1,7 +1,7 @@
-// Consistent color coding per order type, used on the Order Board ticket panel,
-// Kitchen Display tickets, and Order History — so staff can tell order types apart
-// at a glance everywhere in the app.
-export const ORDER_TYPES = ['Dine In', 'Take Away', 'Delivery']
+// Consistent color coding per order type, used throughout the ordering flow.
+// Delivery isn't a selectable type here — customers order Dine In or Take Away and
+// arrange their own rider if needed (see the note in Checkout).
+export const ORDER_TYPES = ['Dine In', 'Take Away']
 
 export const ORDER_TYPE_STYLES = {
   'Dine In': {
@@ -13,11 +13,6 @@ export const ORDER_TYPE_STYLES = {
     solid: 'bg-terracotta text-white',
     soft: 'bg-terracotta-light text-terracotta-dark',
     dot: 'bg-terracotta',
-  },
-  Delivery: {
-    solid: 'bg-clay text-white',
-    soft: 'bg-clay-light text-clay-dark',
-    dot: 'bg-clay',
   },
 }
 
