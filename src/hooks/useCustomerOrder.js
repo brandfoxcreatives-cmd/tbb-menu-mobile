@@ -102,3 +102,32 @@ export function useOrderTracking(orderId) {
 
   return { order, loading }
 }
+
+// Live status for several orders at once — used by the "My Orders" list so every
+// order shown updates its status badge in real time, not just the one currently
+// open in detail view.
+export function useMultiOrderTracking(orderIds) {
+  const [ordersById, setOrdersById] = useState({})
+
+  useEffect(() => {
+    if (!orderIds || orderIds.length === 0) {
+      setOrdersById({})
+      return
+    }
+    const unsubs = orderIds.map((id) =>
+      onSnapshot(
+        doc(db, ORDERS_COL, id),
+        (snap) => {
+          setOrdersById((prev) => ({
+            ...prev,
+            [id]: snap.exists() ? { id: snap.id, ...snap.data() } : null,
+          }))
+        },
+        (err) => console.error('Order tracking error', id, err),
+      ),
+    )
+    return () => unsubs.forEach((u) => u())
+  }, [JSON.stringify(orderIds)])
+
+  return ordersById
+}

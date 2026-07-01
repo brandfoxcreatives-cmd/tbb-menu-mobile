@@ -1,26 +1,35 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { CATEGORIES, CATEGORY_ICONS } from './data/menuData.js'
 import { useStock } from './hooks/useStock.js'
 import { useMenuImages } from './hooks/useMenuImages.js'
 import { useCustomerOrder } from './hooks/useCustomerOrder.js'
+import { getStoredOrders, addStoredOrder } from './utils/orderStorage.js'
 import CategoryTabs from './components/CategoryTabs.jsx'
 import MenuItemCard from './components/MenuItemCard.jsx'
 import CartBar from './components/CartBar.jsx'
 import CartView from './components/CartView.jsx'
 import CheckoutView from './components/CheckoutView.jsx'
 import OrderStatusView from './components/OrderStatusView.jsx'
+import MyOrdersView from './components/MyOrdersView.jsx'
 
 export default function App() {
-  const [view, setView] = useState('menu') // menu | cart | checkout | confirmation
+  const [view, setView] = useState('menu') // menu | cart | checkout | confirmation | orders
   const [activeCategory, setActiveCategory] = useState('all')
   const [search, setSearch] = useState('')
   const [cart, setCart] = useState([])
   const [submitting, setSubmitting] = useState(false)
   const [placedOrder, setPlacedOrder] = useState(null)
+  const [storedOrders, setStoredOrders] = useState(() => getStoredOrders())
 
   const { isAvailable, loading: stockLoading } = useStock()
   const { getImage } = useMenuImages()
   const { submitOrder } = useCustomerOrder()
+
+  // Refresh the stored-orders list whenever we come back to the My Orders screen,
+  // in case an order was placed in another tab on the same device.
+  useEffect(() => {
+    if (view === 'orders') setStoredOrders(getStoredOrders())
+  }, [view])
 
   const visibleCategories = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -75,6 +84,13 @@ export default function App() {
     setSubmitting(true)
     try {
       const { orderId, orderNumber } = await submitOrder(payload)
+      addStoredOrder({
+        orderId,
+        orderNumber,
+        tableNumber: payload.tableNumber,
+        total: payload.total,
+      })
+      setStoredOrders(getStoredOrders())
       setPlacedOrder({ orderId, orderNumber, tableNumber: payload.tableNumber })
       setCart([])
       setView('confirmation')
@@ -95,6 +111,19 @@ export default function App() {
           orderId={placedOrder.orderId}
           orderNumber={placedOrder.orderNumber}
           onNewOrder={startNewOrder}
+          onViewMyOrders={() => setView('orders')}
+        />
+      </div>
+    )
+  }
+
+  if (view === 'orders') {
+    return (
+      <div className="mx-auto h-screen max-w-md bg-white">
+        <MyOrdersView
+          storedOrders={storedOrders}
+          onBack={() => setView('menu')}
+          onOrderMore={() => setView('menu')}
         />
       </div>
     )
@@ -131,10 +160,25 @@ export default function App() {
   return (
     <div className="mx-auto flex h-screen max-w-md flex-col bg-white">
       <div className="border-b border-line bg-forest px-4 pb-4 pt-6 text-cream">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-gold">
-          Taal Bayview Bistro
-        </p>
-        <h1 className="text-xl font-bold">What would you like today?</h1>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-gold">
+              Taal Bayview Bistro
+            </p>
+            <h1 className="text-xl font-bold">What would you like today?</h1>
+          </div>
+          <button
+            onClick={() => setView('orders')}
+            className="relative mt-1 flex shrink-0 items-center gap-1 rounded-full border border-forest-light bg-forest-dark px-3 py-1.5 text-xs font-semibold text-cream"
+          >
+            🧾 My Orders
+            {storedOrders.length > 0 && (
+              <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-gold px-1 font-mono text-[9px] font-bold text-forest-dark">
+                {storedOrders.length}
+              </span>
+            )}
+          </button>
+        </div>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}

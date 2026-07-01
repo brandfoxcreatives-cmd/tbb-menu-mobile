@@ -30,6 +30,20 @@ Orders placed here are tagged `orderSource: 'QR / Mobile Self-Order'` so staff c
 tell at a glance (in Order History or on the printed receipt) which orders came from
 a customer's phone versus the cashier.
 
+## My Orders — checking on an order later
+
+No login is needed. When someone places an order, its ID is remembered in that
+device's browser storage (not tied to a person, just that phone/browser — clearing
+browser data will clear this list). A **🧾 My Orders** button sits in the top-right of
+the menu screen (badge shows how many), and also appears as a link right after
+placing an order.
+
+Tapping it shows every order placed from that device, each with a live status badge,
+most recent first (capped at the most recent 20). Tapping an individual order opens
+its full live tracker (same Order Received → Preparing → Ready → Served steps as the
+confirmation screen) plus its item list and total — so a guest can check back on an
+order from earlier in the meal, or from a previous visit, without asking staff.
+
 ## What it does NOT include
 
 On purpose, to keep this app focused purely on ordering:
