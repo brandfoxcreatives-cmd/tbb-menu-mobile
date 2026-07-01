@@ -97,3 +97,13 @@ create documents in `orders` plus read/update `counters/{date}`. It never delete
 anything and never touches Storage directly (it only displays image URLs the staff
 app already uploaded). The same open rule already set up for the staff app covers
 this automatically — no additional Firestore/Storage rule changes needed.
+
+## Orders now go through staff approval first
+
+Every order placed here is saved with `status: 'awaiting_approval'` — it's tagged
+`orderSource: 'Facebook'` automatically (matching how the ordering link gets shared)
+and shows up as a review popup on the staff app's Dashboard. A staff member approves
+it (which is what actually sends it to the kitchen) or declines it. The customer's
+own tracker screen reflects this with an "Awaiting Confirmation" step before "Order
+Received," so they're not left thinking their order started cooking before a human
+has actually looked at it.

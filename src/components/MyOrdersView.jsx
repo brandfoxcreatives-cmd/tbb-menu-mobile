@@ -3,6 +3,7 @@ import { useMultiOrderTracking } from '../hooks/useCustomerOrder.js'
 import OrderTracker, { STEPS } from './OrderTracker.jsx'
 
 const STATUS_STYLES = {
+  awaiting_approval: 'bg-clay-light text-clay-dark',
   pending: 'bg-gold-light text-forest-dark',
   cooking: 'bg-terracotta-light text-terracotta-dark',
   ready: 'bg-ready-light text-ready',

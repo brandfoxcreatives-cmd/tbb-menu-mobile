@@ -34,7 +34,7 @@ export default function CheckoutView({ cart, onBack, onSubmit, submitting }) {
         totalDiscount: bill.totalDiscount,
         tax: 0,
         total: finalAmount,
-        orderSource: 'QR / Mobile Self-Order',
+        orderSource: 'Facebook',
       })
     } catch (err) {
       setError(err?.message || 'Could not place the order. Please try again.')

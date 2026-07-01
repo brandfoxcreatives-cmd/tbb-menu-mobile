@@ -214,6 +214,9 @@ export default function App() {
           placeholder="Search menu…"
           className="mt-4 w-full rounded-xl border border-forest-light bg-forest-dark px-3.5 py-2.5 text-sm text-cream placeholder:text-cream/40 focus:outline-none"
         />
+        <p className="mt-2 text-center font-mono text-[9px] text-cream/30">
+          build: v2-approval-workflow (2026-07-02)
+        </p>
       </div>
 
       <CategoryTabs activeCategory={activeCategory} onSelect={setActiveCategory} />

@@ -52,7 +52,10 @@ export function useCustomerOrder() {
         sequence,
         scheduledDate: `${yyyy}-${mm}-${dd}`,
         isAdvanceOrder: false,
-        status: 'pending',
+        // Customer-submitted orders wait for a staff member to review and approve
+        // them (see the Dashboard approval popup in the staff app) before they're
+        // released to the Kitchen Display — they do NOT start as 'pending'.
+        status: 'awaiting_approval',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       })

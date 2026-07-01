@@ -1,6 +1,7 @@
 import React from 'react'
 
 export const STEPS = [
+  { status: 'awaiting_approval', label: 'Awaiting Confirmation', icon: '⏳' },
   { status: 'pending', label: 'Order Received', icon: '📝' },
   { status: 'cooking', label: 'Preparing', icon: '👨‍🍳' },
   { status: 'ready', label: 'Ready to Serve', icon: '🔔' },
