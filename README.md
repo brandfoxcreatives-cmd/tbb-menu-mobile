@@ -30,6 +30,23 @@ Orders placed here are tagged `orderSource: 'QR / Mobile Self-Order'` so staff c
 tell at a glance (in Order History or on the printed receipt) which orders came from
 a customer's phone versus the cashier.
 
+## Customer info required before ordering
+
+The very first time someone opens the app on a device, they're shown a short form
+(Name, Facebook Name, Mobile Number, Address — all but Facebook Name required)
+before they can browse the menu. It's saved to that device so it only needs to be
+filled in once; a small "edit info" link in the header lets them update it later.
+These details are attached to every order placed from that device
+(`customerName`, `customerFacebookName`, `customerContact`, `customerAddress`), so
+staff always have a way to reach the customer — visible in Order History and on the
+printed receipt in the staff app.
+
+## Header
+
+Taller header with a smaller, secondary-weight "What would you like today?" line, so
+the restaurant name and the My Orders button have more room to breathe instead of
+competing with a large heading.
+
 ## My Orders — checking on an order later
 
 No login is needed. When someone places an order, its ID is remembered in that

@@ -4,6 +4,8 @@ import { useStock } from './hooks/useStock.js'
 import { useMenuImages } from './hooks/useMenuImages.js'
 import { useCustomerOrder } from './hooks/useCustomerOrder.js'
 import { getStoredOrders, addStoredOrder } from './utils/orderStorage.js'
+import { getCustomerProfile, saveCustomerProfile } from './utils/customerProfile.js'
+import CustomerInfoGate from './components/CustomerInfoGate.jsx'
 import CategoryTabs from './components/CategoryTabs.jsx'
 import MenuItemCard from './components/MenuItemCard.jsx'
 import CartBar from './components/CartBar.jsx'
@@ -13,6 +15,8 @@ import OrderStatusView from './components/OrderStatusView.jsx'
 import MyOrdersView from './components/MyOrdersView.jsx'
 
 export default function App() {
+  const [profile, setProfile] = useState(() => getCustomerProfile())
+  const [editingProfile, setEditingProfile] = useState(false)
   const [view, setView] = useState('menu') // menu | cart | checkout | confirmation | orders
   const [activeCategory, setActiveCategory] = useState('all')
   const [search, setSearch] = useState('')
@@ -25,8 +29,6 @@ export default function App() {
   const { getImage } = useMenuImages()
   const { submitOrder } = useCustomerOrder()
 
-  // Refresh the stored-orders list whenever we come back to the My Orders screen,
-  // in case an order was placed in another tab on the same device.
   useEffect(() => {
     if (view === 'orders') setStoredOrders(getStoredOrders())
   }, [view])
@@ -80,10 +82,22 @@ export default function App() {
   const itemCount = cart.reduce((s, l) => s + l.qty, 0)
   const cartTotal = cart.reduce((s, l) => s + l.price * l.qty, 0)
 
+  const handleProfileSubmit = (newProfile) => {
+    saveCustomerProfile(newProfile)
+    setProfile(newProfile)
+    setEditingProfile(false)
+  }
+
   const handleSubmitOrder = async (payload) => {
     setSubmitting(true)
     try {
-      const { orderId, orderNumber } = await submitOrder(payload)
+      const { orderId, orderNumber } = await submitOrder({
+        ...payload,
+        customerName: profile?.name || null,
+        customerFacebookName: profile?.facebookName || null,
+        customerContact: profile?.mobileNumber || null,
+        customerAddress: profile?.address || null,
+      })
       addStoredOrder({
         orderId,
         orderNumber,
@@ -102,6 +116,15 @@ export default function App() {
   const startNewOrder = () => {
     setPlacedOrder(null)
     setView('menu')
+  }
+
+  // Gate the entire app behind the contact info form until it's filled in once —
+  // every order from this device carries these details afterward, so staff always
+  // have a way to reach the customer.
+  if (!profile || editingProfile) {
+    return (
+      <CustomerInfoGate initialProfile={profile} onSubmit={handleProfileSubmit} />
+    )
   }
 
   if (view === 'confirmation' && placedOrder) {
@@ -159,13 +182,19 @@ export default function App() {
 
   return (
     <div className="mx-auto flex h-screen max-w-md flex-col bg-white">
-      <div className="border-b border-line bg-forest px-4 pb-4 pt-6 text-cream">
+      <div className="border-b border-line bg-forest px-4 pb-6 pt-8 text-cream">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-gold">
               Taal Bayview Bistro
             </p>
-            <h1 className="text-xl font-bold">What would you like today?</h1>
+            <h1 className="mt-1 text-sm font-semibold text-cream/90">What would you like today?</h1>
+            <button
+              onClick={() => setEditingProfile(true)}
+              className="mt-1 text-[10px] font-semibold text-cream/50 underline underline-offset-2"
+            >
+              Hi, {profile.name.split(' ')[0]} · edit info
+            </button>
           </div>
           <button
             onClick={() => setView('orders')}
@@ -183,7 +212,7 @@ export default function App() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search menu…"
-          className="mt-3 w-full rounded-xl border border-forest-light bg-forest-dark px-3.5 py-2 text-sm text-cream placeholder:text-cream/40 focus:outline-none"
+          className="mt-4 w-full rounded-xl border border-forest-light bg-forest-dark px-3.5 py-2.5 text-sm text-cream placeholder:text-cream/40 focus:outline-none"
         />
       </div>
 
