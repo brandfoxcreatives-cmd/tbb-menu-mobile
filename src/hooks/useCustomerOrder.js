@@ -4,6 +4,7 @@ import {
   collection,
   addDoc,
   doc,
+  updateDoc,
   onSnapshot,
   serverTimestamp,
   runTransaction,
@@ -83,7 +84,19 @@ export function useCustomerOrder() {
     return { orderId: docRef.id, orderNumber, isAdvanceOrder }
   }
 
-  return { submitOrder }
+  // Customer tapped "Got it!" on the 1-hour-ahead reminder popup. Uses its own
+  // field (customerReminderAcknowledged) — deliberately separate from the staff
+  // app's own `reminderAcknowledged` on the same order doc, so a customer
+  // dismissing their reminder never silences the kitchen's separate reminder, and
+  // vice versa.
+  const acknowledgeReminder = async (orderId) => {
+    await updateDoc(doc(db, ORDERS_COL, orderId), {
+      customerReminderAcknowledged: true,
+      updatedAt: serverTimestamp(),
+    })
+  }
+
+  return { submitOrder, acknowledgeReminder }
 }
 
 // Live status tracker for a single placed order — used on the confirmation screen

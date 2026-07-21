@@ -174,3 +174,23 @@ depending on the type), and picking a future date actually matters this time:
   before it's due.
 - The order confirmation screen now shows the scheduled date/time back to the
   customer so they can double-check what they picked.
+
+## 1-hour-ahead reminder popup (ported from the staff app)
+
+Same mechanism as the staff app's kitchen-side reminder, reframed for the customer:
+
+- **Fires automatically** about an hour before any of the customer's own placed
+  orders (tracked via this device's "My Orders" list) is due — whether it's
+  Dine In or Take Away — showing the order number, scheduled date/time, and a
+  short reminder to be on the way.
+- **Requires a tap to dismiss** ("✅ Got it, thanks!") — this is a deliberate
+  human-intervention step, not an auto-dismissing toast, same as the staff version.
+- **Uses the exact same distinct "rising 3-note" chime** as the staff app
+  (`playAdvanceReminderChime` in `utils/sound.js`, copied over unchanged) — clearly
+  different from any other sound in either app.
+- **Uses its own acknowledgment field** (`customerReminderAcknowledged`), kept
+  deliberately separate from the staff app's `reminderAcknowledged` on the same
+  order — so a customer dismissing their own reminder never silences the kitchen's
+  copy of the same reminder, and vice versa.
+- Fires from **anywhere in the app** (menu, cart, checkout, confirmation, My
+  Orders) since it's wired at the top level, not tied to any one screen.

@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { CATEGORIES, CATEGORY_ICONS } from './data/menuData.js'
 import { useStock } from './hooks/useStock.js'
 import { useMenuImages } from './hooks/useMenuImages.js'
-import { useCustomerOrder } from './hooks/useCustomerOrder.js'
+import { useCustomerOrder, useMultiOrderTracking } from './hooks/useCustomerOrder.js'
 import { getStoredOrders, addStoredOrder } from './utils/orderStorage.js'
 import { getCustomerProfile, saveCustomerProfile } from './utils/customerProfile.js'
+import { playAdvanceReminderChime } from './utils/sound.js'
 import CustomerInfoGate from './components/CustomerInfoGate.jsx'
 import CategoryTabs from './components/CategoryTabs.jsx'
 import MenuItemCard from './components/MenuItemCard.jsx'
@@ -13,6 +14,7 @@ import CartView from './components/CartView.jsx'
 import CheckoutView from './components/CheckoutView.jsx'
 import OrderStatusView from './components/OrderStatusView.jsx'
 import MyOrdersView from './components/MyOrdersView.jsx'
+import AdvanceOrderReminderModal from './components/AdvanceOrderReminderModal.jsx'
 
 export default function App() {
   const [profile, setProfile] = useState(() => getCustomerProfile())
@@ -27,11 +29,53 @@ export default function App() {
 
   const { isAvailable, loading: stockLoading } = useStock()
   const { getImage } = useMenuImages()
-  const { submitOrder } = useCustomerOrder()
+  const { submitOrder, acknowledgeReminder } = useCustomerOrder()
 
   useEffect(() => {
     if (view === 'orders') setStoredOrders(getStoredOrders())
   }, [view])
+
+  // Live data for every order this device has ever placed (same list MyOrdersView
+  // uses), so the reminder can fire from anywhere in the app — not just while
+  // looking at My Orders.
+  const storedOrderIds = useMemo(() => storedOrders.map((o) => o.orderId), [storedOrders])
+  const liveOrdersById = useMultiOrderTracking(storedOrderIds)
+
+  const [reminderTick, setReminderTick] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setReminderTick((n) => n + 1), 60000)
+    return () => clearInterval(t)
+  }, [])
+
+  const dueReminders = Object.values(liveOrdersById)
+    .filter(Boolean)
+    .filter((o) => {
+      if (!o.scheduledDate || !o.scheduledTime) return false
+      if (o.customerReminderAcknowledged) return false
+      if (['served', 'rejected'].includes(o.status)) return false
+      const scheduledAt = new Date(`${o.scheduledDate}T${o.scheduledTime}`)
+      const minutesUntil = (scheduledAt.getTime() - Date.now()) / 60000
+      // Due within the next hour, and not more than 3 hours overdue — same
+      // 3-hour safety window the staff app uses, so a missed reminder doesn't
+      // linger forever once the moment has clearly passed.
+      return minutesUntil <= 60 && minutesUntil >= -180
+    })
+    .sort((a, b) => `${a.scheduledDate}${a.scheduledTime}`.localeCompare(`${b.scheduledDate}${b.scheduledTime}`))
+  // reminderTick is read only to force this to recompute every minute.
+  void reminderTick
+
+  const prevDueReminderIds = useRef(null)
+  useEffect(() => {
+    const currentIds = new Set(dueReminders.map((o) => o.id))
+    if (prevDueReminderIds.current === null) {
+      prevDueReminderIds.current = currentIds
+      return
+    }
+    const hasNewlyDue = dueReminders.some((o) => !prevDueReminderIds.current.has(o.id))
+    if (hasNewlyDue) playAdvanceReminderChime()
+    prevDueReminderIds.current = currentIds
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dueReminders.map((o) => o.id).join(',')])
 
   const visibleCategories = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -133,6 +177,7 @@ export default function App() {
   if (view === 'confirmation' && placedOrder) {
     return (
       <div className="mx-auto h-screen max-w-md bg-white">
+        <AdvanceOrderReminderModal orders={dueReminders} onAcknowledge={acknowledgeReminder} />
         <OrderStatusView
           orderId={placedOrder.orderId}
           orderNumber={placedOrder.orderNumber}
@@ -146,6 +191,7 @@ export default function App() {
   if (view === 'orders') {
     return (
       <div className="mx-auto h-screen max-w-md bg-white">
+        <AdvanceOrderReminderModal orders={dueReminders} onAcknowledge={acknowledgeReminder} />
         <MyOrdersView
           storedOrders={storedOrders}
           onBack={() => setView('menu')}
@@ -158,6 +204,7 @@ export default function App() {
   if (view === 'cart') {
     return (
       <div className="mx-auto h-screen max-w-md bg-white">
+        <AdvanceOrderReminderModal orders={dueReminders} onAcknowledge={acknowledgeReminder} />
         <CartView
           cart={cart}
           updateQty={updateQty}
@@ -173,6 +220,7 @@ export default function App() {
   if (view === 'checkout') {
     return (
       <div className="mx-auto h-screen max-w-md bg-white">
+        <AdvanceOrderReminderModal orders={dueReminders} onAcknowledge={acknowledgeReminder} />
         <CheckoutView
           cart={cart}
           onBack={() => setView('cart')}
@@ -185,6 +233,7 @@ export default function App() {
 
   return (
     <div className="mx-auto flex h-screen max-w-md flex-col bg-white">
+      <AdvanceOrderReminderModal orders={dueReminders} onAcknowledge={acknowledgeReminder} />
       <div className="border-b border-line bg-forest px-4 pb-6 pt-8 text-cream">
         <div className="flex items-start justify-between gap-3">
           <div>
