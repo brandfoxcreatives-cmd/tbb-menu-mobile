@@ -91,13 +91,16 @@ export default function App() {
   const handleSubmitOrder = async (payload) => {
     setSubmitting(true)
     try {
-      const { orderId, orderNumber } = await submitOrder({
-        ...payload,
-        customerName: profile?.name || null,
-        customerFacebookName: profile?.facebookName || null,
-        customerContact: profile?.mobileNumber || null,
-        customerAddress: profile?.address || null,
-      })
+      const { orderId, orderNumber } = await submitOrder(
+        {
+          ...payload,
+          customerName: profile?.name || null,
+          customerFacebookName: profile?.facebookName || null,
+          customerContact: profile?.mobileNumber || null,
+          customerAddress: profile?.address || null,
+        },
+        payload.scheduledDate,
+      )
       addStoredOrder({
         orderId,
         orderNumber,

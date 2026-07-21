@@ -152,3 +152,25 @@ service firebase.storage {
 
 Update this in Firebase Console → Storage → Rules → Publish, or proof-of-payment
 uploads will fail with a permission error.
+
+## Dine In and Take Away now always require a date and time
+
+Previously only Dine In had a time picker, and it didn't actually affect anything —
+every order was silently saved for "today" regardless of what was picked. Take Away
+had no date/time field at all.
+
+Now both order types show a required **Date** and **Time** picker at checkout
+(labeled "Preferred Dine-in Date & Time" or "Preferred Pickup Date & Time"
+depending on the type), and picking a future date actually matters this time:
+
+- The date and time are saved as `scheduledDate` / `scheduledTime` on the order —
+  the exact same field names the staff app already uses for its own advance-order
+  scheduling and 1-hour-ahead kitchen reminder.
+- If the customer picks **today**, the order behaves exactly as before once staff
+  approve it.
+- If the customer picks a **future date**, the order becomes a genuine advance
+  order in the staff app — same as if staff had scheduled it manually — complete
+  with its own place in the Advance Orders list and the reminder popup an hour
+  before it's due.
+- The order confirmation screen now shows the scheduled date/time back to the
+  customer so they can double-check what they picked.

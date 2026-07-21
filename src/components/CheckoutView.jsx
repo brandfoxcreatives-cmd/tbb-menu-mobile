@@ -11,9 +11,17 @@ const PAYMENT_METHODS = [
   { id: 'Cash on Delivery', label: 'Cash on Delivery', needsProof: false },
 ]
 
+function todayDateStr() {
+  const d = new Date()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mm}-${dd}`
+}
+
 export default function CheckoutView({ cart, onBack, onSubmit, submitting }) {
   const [orderType, setOrderType] = useState('Dine In')
-  const [dineInTime, setDineInTime] = useState('')
+  const [orderDate, setOrderDate] = useState(todayDateStr())
+  const [orderTime, setOrderTime] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('GCash')
   const [proofUrl, setProofUrl] = useState('')
   const [error, setError] = useState('')
@@ -42,8 +50,12 @@ export default function CheckoutView({ cart, onBack, onSubmit, submitting }) {
 
   const handleSubmit = async () => {
     setError('')
-    if (orderType === 'Dine In' && !dineInTime) {
-      setError('Please choose your preferred dine-in time.')
+    if (!orderDate || !orderTime) {
+      setError(
+        orderType === 'Dine In'
+          ? 'Please choose your preferred dine-in date and time.'
+          : 'Please choose your preferred pickup date and time.',
+      )
       return
     }
     if (selectedMethod?.needsProof && !proofUrl) {
@@ -54,7 +66,8 @@ export default function CheckoutView({ cart, onBack, onSubmit, submitting }) {
       await onSubmit({
         tableNumber: '—',
         orderType,
-        dineInTime: orderType === 'Dine In' ? dineInTime : null,
+        scheduledDate: orderDate,
+        scheduledTime: orderTime,
         items: cart,
         subtotal,
         tax: 0,
@@ -95,22 +108,30 @@ export default function CheckoutView({ cart, onBack, onSubmit, submitting }) {
           ))}
         </div>
 
-        {orderType === 'Dine In' ? (
-          <label className="mb-4 block">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink/40">
-              Preferred Dine-in Time
-            </span>
-            <input
-              type="time"
-              value={dineInTime}
-              onChange={(e) => setDineInTime(e.target.value)}
-              className="w-full rounded-xl border border-line bg-cream px-3.5 py-2.5 text-sm focus:border-forest focus:outline-none"
-            />
-          </label>
-        ) : (
+        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink/40">
+          {orderType === 'Dine In' ? 'Preferred Dine-in Date & Time' : 'Preferred Pickup Date & Time'}
+        </p>
+        <div className="mb-3 grid grid-cols-2 gap-2">
+          <input
+            type="date"
+            min={todayDateStr()}
+            value={orderDate}
+            onChange={(e) => setOrderDate(e.target.value)}
+            className="w-full rounded-xl border border-line bg-cream px-3.5 py-2.5 text-sm focus:border-forest focus:outline-none"
+          />
+          <input
+            type="time"
+            value={orderTime}
+            onChange={(e) => setOrderTime(e.target.value)}
+            className="w-full rounded-xl border border-line bg-cream px-3.5 py-2.5 text-sm focus:border-forest focus:outline-none"
+          />
+        </div>
+
+        {orderType === 'Take Away' && (
           <div className="mb-4 rounded-xl bg-cream px-3.5 py-2.5 text-xs text-ink/70">
             🍳 Estimated preparation time: <span className="font-bold">20–30 minutes</span> from
-            when your order is confirmed. We'll have it packed and ready for pickup.
+            when your order is confirmed — pick a time that gives us enough of a head
+            start, and we'll have it packed and ready right when you arrive.
           </div>
         )}
 

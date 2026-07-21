@@ -14,6 +14,12 @@ export default function OrderStatusView({ orderId, orderNumber, onNewOrder, onVi
         {order?.tableNumber && order.tableNumber !== '—' ? `Table ${order.tableNumber} · ` : ''}
         Show this screen to a staff member if you need help.
       </p>
+      {order?.scheduledDate && order?.scheduledTime && (
+        <p className="mt-2 rounded-full bg-cream px-3 py-1 text-xs font-semibold text-ink/70">
+          📅 {order.orderType === 'Dine In' ? 'Dine-in' : 'Pickup'} for {order.scheduledDate} at{' '}
+          {order.scheduledTime}
+        </p>
+      )}
 
       <div className="mt-8">
         <OrderTracker order={order} loading={loading} />

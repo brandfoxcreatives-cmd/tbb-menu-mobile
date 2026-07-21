@@ -20,8 +20,17 @@ function dateParts(d = new Date()) {
 }
 
 export function useCustomerOrder() {
-  const submitOrder = async (orderPayload) => {
-    const { mm, dd, yyyy, dateKey } = dateParts()
+  const submitOrder = async (orderPayload, scheduledDateStr) => {
+    // scheduledDateStr, if provided, is a 'YYYY-MM-DD' string from the checkout
+    // date picker. Defaults to today when not given. Picking a future date makes
+    // this a genuine advance order in the staff app too — same behavior as staff
+    // manually scheduling one — since it shares the exact same daily counter and
+    // dateKey logic.
+    const targetDate = scheduledDateStr ? new Date(`${scheduledDateStr}T00:00:00`) : new Date()
+    const { mm, dd, yyyy, dateKey } = dateParts(targetDate)
+    const todayKey = dateParts(new Date()).dateKey
+    const isAdvanceOrder = dateKey > todayKey
+
     const counterRef = doc(db, COUNTERS_COL, dateKey)
 
     let sequence
@@ -51,11 +60,14 @@ export function useCustomerOrder() {
         dateKey,
         sequence,
         scheduledDate: `${yyyy}-${mm}-${dd}`,
-        isAdvanceOrder: false,
+        isAdvanceOrder,
         // Customer-submitted orders wait for a staff member to review and approve
         // them (see the Dashboard approval popup in the staff app) before they're
-        // released to the Kitchen Display — they do NOT start as 'pending'.
+        // released to the Kitchen Display — they do NOT start as 'pending'. Once
+        // approved, the staff app itself decides 'pending' vs 'scheduled' based on
+        // whether this date has already arrived.
         status: 'awaiting_approval',
+        station2Status: 'awaiting_approval',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       })
@@ -68,7 +80,7 @@ export function useCustomerOrder() {
       )
     }
 
-    return { orderId: docRef.id, orderNumber }
+    return { orderId: docRef.id, orderNumber, isAdvanceOrder }
   }
 
   return { submitOrder }
