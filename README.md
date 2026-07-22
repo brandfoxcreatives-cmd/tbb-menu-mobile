@@ -194,3 +194,18 @@ Same mechanism as the staff app's kitchen-side reminder, reframed for the custom
   copy of the same reminder, and vice versa.
 - Fires from **anywhere in the app** (menu, cart, checkout, confirmation, My
   Orders) since it's wired at the top level, not tied to any one screen.
+
+## Store hours + scheduled date/time now visible to the customer
+
+- **Store hours (8:00 AM–7:00 PM)** are now enforced at checkout — the time picker
+  is constrained to that range, and submitting outside those hours shows a clear
+  error before the order can be placed. Matches the same constants used in the
+  staff app (`utils/scheduling.js`, copied over so both apps agree on hours).
+- **The customer's chosen date/time is now shown back to them** in two more
+  places it was previously missing: the "My Orders" list (each order now shows a
+  small 📅 date/time line when one was scheduled) and the Order Details screen for
+  a specific order — previously neither showed this at all, even though the
+  customer had picked it at checkout.
+- Same time-aware advance-order logic as the staff app: an order scheduled for
+  later today (not just a future date) still correctly becomes a genuine advance
+  order once it's more than an hour out.

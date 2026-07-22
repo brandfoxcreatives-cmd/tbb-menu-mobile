@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react'
 import { ORDER_TYPES, orderTypeStyle } from '../utils/orderTypeStyles.js'
 import { peso } from '../utils/billMath.js'
 import { usePaymentProofUpload } from '../hooks/usePaymentProofUpload.js'
+import { isWithinStoreHours, storeHoursLabel } from '../utils/scheduling.js'
 
 const COD_LIMIT = 500
 
@@ -58,6 +59,10 @@ export default function CheckoutView({ cart, onBack, onSubmit, submitting }) {
       )
       return
     }
+    if (!isWithinStoreHours(orderTime)) {
+      setError(`We're only open ${storeHoursLabel()} — please pick a time within store hours.`)
+      return
+    }
     if (selectedMethod?.needsProof && !proofUrl) {
       setError('Please upload your proof of payment before placing the order.')
       return
@@ -111,7 +116,7 @@ export default function CheckoutView({ cart, onBack, onSubmit, submitting }) {
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink/40">
           {orderType === 'Dine In' ? 'Preferred Dine-in Date & Time' : 'Preferred Pickup Date & Time'}
         </p>
-        <div className="mb-3 grid grid-cols-2 gap-2">
+        <div className="mb-1 grid grid-cols-2 gap-2">
           <input
             type="date"
             min={todayDateStr()}
@@ -121,11 +126,14 @@ export default function CheckoutView({ cart, onBack, onSubmit, submitting }) {
           />
           <input
             type="time"
+            min="08:00"
+            max="19:00"
             value={orderTime}
             onChange={(e) => setOrderTime(e.target.value)}
             className="w-full rounded-xl border border-line bg-cream px-3.5 py-2.5 text-sm focus:border-forest focus:outline-none"
           />
         </div>
+        <p className="mb-3 text-[10px] text-ink/40">Store hours: {storeHoursLabel()}</p>
 
         {orderType === 'Take Away' && (
           <div className="mb-4 rounded-xl bg-cream px-3.5 py-2.5 text-xs text-ink/70">

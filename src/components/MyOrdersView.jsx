@@ -45,6 +45,12 @@ export default function MyOrdersView({ storedOrders, onBack, onOrderMore }) {
               ? `Table ${selected.tableNumber}`
               : ''}
           </p>
+          {selected?.scheduledDate && selected?.scheduledTime && (
+            <p className="mt-2 inline-block rounded-full bg-cream px-3 py-1 text-xs font-semibold text-ink/70">
+              📅 {selected.orderType === 'Take Away' ? 'Pickup' : 'Dine-in'} for{' '}
+              {selected.scheduledDate} at {selected.scheduledTime}
+            </p>
+          )}
           {selected === undefined ? (
             <p className="mt-8 text-sm text-ink/40">Loading…</p>
           ) : selected === null ? (
@@ -144,6 +150,11 @@ export default function MyOrdersView({ storedOrders, onBack, onOrderMore }) {
                         ₱{(stored.total || 0).toLocaleString()}
                       </span>
                     </div>
+                    {live?.scheduledDate && live?.scheduledTime && (
+                      <p className="mt-1 text-[11px] font-semibold text-clay-dark">
+                        📅 {live.scheduledDate} at {live.scheduledTime}
+                      </p>
+                    )}
                   </button>
                 </li>
               )
