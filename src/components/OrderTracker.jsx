@@ -1,10 +1,10 @@
 import React from 'react'
 
 export const STEPS = [
-  { status: 'awaiting_approval', label: 'Awaiting Confirmation', icon: '⏳' },
-  { status: 'pending', label: 'Order Received', icon: '📝' },
-  { status: 'cooking', label: 'Preparing', icon: '👨‍🍳' },
-  { status: 'ready', label: 'Ready to Serve', icon: '🔔' },
+  { status: 'awaiting_approval', label: 'Just a Sec…', icon: '⏳' },
+  { status: 'pending', label: 'Got Your Order!', icon: '📝' },
+  { status: 'cooking', label: "Kitchen's Cooking", icon: '👨‍🍳' },
+  { status: 'ready', label: "It's Ready! 🎉", icon: '🔔' },
   { status: 'served', label: 'Served — Enjoy!', icon: '🍽️' },
 ]
 

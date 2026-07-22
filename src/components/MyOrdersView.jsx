@@ -134,7 +134,7 @@ export default function MyOrdersView({ storedOrders, onBack, onOrderMore }) {
                           }`}
                         >
                           {status === 'pending'
-                            ? 'Order Received'
+                            ? 'Got Your Order!'
                             : STEPS.find((s) => s.status === status)?.label || status}
                         </span>
                       )}

@@ -209,3 +209,17 @@ Same mechanism as the staff app's kitchen-side reminder, reframed for the custom
 - Same time-aware advance-order logic as the staff app: an order scheduled for
   later today (not just a future date) still correctly becomes a genuine advance
   order once it's more than an hour out.
+
+## Friendlier order status labels
+
+Punched up the order tracker's status text (shown on the confirmation screen and
+My Orders):
+
+- "Order Received" → **"Got Your Order!"**
+- "Preparing" → **"Kitchen's Cooking"**
+- "Ready to Serve" → **"It's Ready! 🎉"**
+- "Served — Enjoy!" — kept as is, already short and warm
+- "Awaiting Confirmation" → **"Just a Sec…"**
+
+Kept them short on purpose so they still fit cleanly in the tracker and the
+compact status badge on My Orders.
